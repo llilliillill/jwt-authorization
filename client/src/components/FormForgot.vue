@@ -7,7 +7,7 @@
   >
     <a-form-item
       name="email"
-      :rules="[{ required: true, message: 'Введите email!' }]"
+      :rules="[{ required: true, message: 'Введите email' }]"
     >
       <a-input v-model:value="formState.email" placeholder="Email">
         <template #prefix>

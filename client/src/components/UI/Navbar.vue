@@ -29,6 +29,13 @@
             return {
                 selectedKeys: ['users']
             }
+        },
+
+        // При переходе по ссылке активируем нужный tab в header
+        mounted() {
+            this.selectedKeys = [
+                window.location.pathname.replace('/', '')
+            ]
         }
     }
 </script>

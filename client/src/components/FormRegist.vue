@@ -7,7 +7,7 @@
     >
         <a-form-item
             name="email"
-            :rules="[{ required: true, message: 'Введите email!' }]"
+            :rules="[{ required: true, message: 'Введите email' }]"
         >
             <a-input v-model:value="formState.email" placeholder="Email">
                 <template #prefix>
@@ -18,7 +18,7 @@
 
         <a-form-item
             name="username"
-            :rules="[{ required: true, message: 'Введите имя пользователя!' }]"
+            :rules="[{ required: true, message: 'Введите имя пользователя' }]"
         >
             <a-input v-model:value="formState.username" placeholder="Имя пользователя">
                 <template #prefix>
@@ -29,7 +29,7 @@
 
         <a-form-item
             name="password"
-            :rules="[{ required: true, message: 'Введите пароль!' }]"
+            :rules="[{ required: true, message: 'Введите пароль' }]"
         >
             <a-input-password v-model:value="formState.password" placeholder="Пароль">
                 <template #prefix>
@@ -40,7 +40,7 @@
 
         <a-form-item
             name="password2"
-            :rules="[{ required: true, message: 'Пароли не совпадают!' }]"
+            :rules="[{ required: true, message: 'Пароли не совпадают' }]"
         >
             <a-input-password v-model:value="formState.password2" placeholder="Пароль">
                 <template #prefix>

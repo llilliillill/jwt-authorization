@@ -1,5 +1,5 @@
 require('dotenv').config()
-const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer')
 
 class MailService {
 
@@ -30,9 +30,9 @@ class MailService {
         // })
 
         // Выводим ссылку для активации в консоль
-        console.log('activation link: ' + link);
+        console.log('activation link: ' + link)
     }
 
 }
 
-module.exports = new MailService();
+module.exports = new MailService()

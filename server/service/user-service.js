@@ -1,10 +1,9 @@
-const UserModel = require('../models/user-model');
-const MailService = require('../service/mail-service');
-const TokenService = require('../service/token-service');
-const UserDto = require('../dtos/user-dto');
-const bcrypt = require('bcrypt');
-const uuid = require('uuid');
-const ApiError = require('../exeptions/api-error');
+const UserModel = require('../models/user-model')
+const MailService = require('../service/mail-service')
+const TokenService = require('../service/token-service')
+const bcrypt = require('bcrypt')
+const uuid = require('uuid')
+const ApiError = require('../exeptions/api-error')
 
 class UserService {
 
@@ -19,105 +18,125 @@ class UserService {
         // Хешируем пароль
         const hashPassword = await bcrypt.hash(password, 3)
 
-        // Ссылка для подтверждения отправляемая на почту
-        const activateLink = uuid.v4();
+        // Генерируем cсылку для подтверждения почты
+        const activateLink = uuid.v4()
 
-        // Если условие не выполнилось то создаем пользователя и сохраняем его в БД
-        const user = await UserModel.createUser({ email, username, password: hashPassword, activateLink })
+        // Создаем пользователя
+        await UserModel.createUser({ 
+            email, 
+            username, 
+            password: hashPassword, 
+            activateLink 
+        })
 
-        // Отправка email с ссылкой подтверждения 
-        //! Сейчас не отправляется выводим в консоль
-        await MailService.sendActivationMail(email, `${ process.env.API_URL }/api/activate/${activateLink}`);
+        // Отправляем ссылку на указанную почту для активации аккаунта
+        await MailService.sendActivationMail(email, 
+            `${ process.env.API_URL }/api/activate/${activateLink}`
+        )
 
-        // Информация о пользователе без пароля и чего либо
-        // Выкидываем из модели лишние поля
-        const userDto = new UserDto(user); // id, email, isActivated
+        // Получаем только что созданного пользователя
+        const user = await UserModel.getUserByEmail(email)
 
-        // Генерируем токен access и refresh
-        const tokens = TokenService.generateTokens({ ...userDto });
+        const userObj = {
+            id: user.id, 
+            email: user.email, 
+            isActivated: user.isActivated
+        }
 
-        // Сохраняем refresh токен в БД
-        await TokenService.saveToken(userDto.id, tokens.refrashToken);
+        // Генерируем токены access и refresh
+        const tokens = TokenService.generateTokens({ ...userObj })
 
-        return { ...tokens, user: userDto }
+        // Сохраняем refresh
+        await TokenService.saveToken(userObj.id, tokens.refrashToken)
+
+        return { ...tokens, user: userObj }
     }
 
     async activate(activationLink) {
-        // Ищем пользователя в БД по ссылке activationLink
-        const userID = await UserModel.checkActivationLink(activationLink);
+        // Ищем пользователя по ссылке activationLink
+        const user_id = await UserModel.checkActivationLink(activationLink)
 
-        // Убедимся что пользователь с такой ссылкой в БД существует
-        if (!userID) {
-            throw ApiError.BadRequest('Некоректная ссылка авторизации');
+        // Убедимся что пользователь с такой ссылкой существует
+        if (!user_id) {
+            throw ApiError.BadRequest('Некоректная ссылка авторизации')
         }
 
         // Меняем у пользователя поле isActivated на true
-        await UserModel.changeIsActivated(userID);
+        await UserModel.changeIsActivated(user_id)
     }
 
     async login(email, password) {
-        // Ищем пользователя с указанным email в БД
-        const user = await UserModel.checkExistsEmail(email);
+        // Ищем пользователя с указанным email
+        let user = await UserModel.checkExistsEmail(email)
 
         if(!user) {
-            throw ApiError.BadRequest('Пользователь с таким email не найден');
+            throw ApiError.BadRequest('Пользователь с таким email не найден')
         }
 
         // Сравниваем пароли
         const isPassEquals = await bcrypt.compare(password, user.password)
 
         if (!isPassEquals) {
-            throw ApiError.BadRequest('Неверный пароль');
+            throw ApiError.BadRequest('Неверный пароль')
         }
 
-        // Из модели выбрасываем все ненужное
-        const userDto = new UserDto(user);
+        // Получаем пользователя
+        user = await UserModel.getUserByEmail(email)
+
+        const userObj = {
+            id: user.id, 
+            email: user.email, 
+            isActivated: user.isActivated
+        }
 
         // Генерируем пару токенов
-        const tokens = TokenService.generateTokens({ ...userDto });
+        const tokens = TokenService.generateTokens({ ...userObj })
 
-        // Сохраняем refresh токен в БД
-        await TokenService.saveToken(userDto.id, tokens.refrashToken);
+        // Сохраняем refresh токен
+        await TokenService.saveToken(userObj.id, tokens.refrashToken)
 
-        return { ...tokens, user: userDto }
+        return { ...tokens, user: userObj }
     }
 
     async logout(refrashToken) {
-        return await TokenService.removeToken(refrashToken);
+        return await TokenService.removeToken(refrashToken)
     }
 
     async refresh(refrashToken) {
         if (!refrashToken) {
-            ApiError.UnauthorizedError();
+            ApiError.UnauthorizedError()
         }
 
         // Валидируем токен
-        const userData = await TokenService.validateRefrashToken(refrashToken);
-        const tokenFromDb = await TokenService.findToken(refrashToken);
+        const userData = await TokenService.validateRefrashToken(refrashToken)
+        const tokenFromDb = await TokenService.findToken(refrashToken)
 
         if (!userData || !tokenFromDb) {
-            throw ApiError.UnauthorizedError();
+            throw ApiError.UnauthorizedError()
         }
 
         // Вытаскиваем пользователя из бд за 60 дней инф. о нем могла поменяться
-        const user = await UserModel.findById(userData.id)
+        const user = await UserModel.getUserById(userData.id)
 
-        // Из модели выбрасываем все ненужное
-        const userDto = new UserDto(user);
+        const userObj = {
+            id: user.id, 
+            email: user.email, 
+            isActivated: user.isActivated
+        }
 
         // Генерируем пару токенов
-        const tokens = TokenService.generateTokens({ ...userDto });
+        const tokens = TokenService.generateTokens({ ...userObj })
 
-        // Сохраняем refresh токен в БД
-        await TokenService.saveToken(userDto.id, tokens.refrashToken);
+        // Сохраняем refresh токен
+        await TokenService.saveToken(userObj.id, tokens.refrashToken)
 
-        return { ...tokens, user: userDto }
+        return { ...tokens, user: userObj }
     }
 
     async getAllUsers() {
-        return await UserModel.getAllUsers();
+        return await UserModel.getAllUsers()
     }
 
 }
 
-module.exports = new UserService(); 
+module.exports = new UserService()

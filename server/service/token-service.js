@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const TokenModel = require('../models/token-model');
+const jwt = require('jsonwebtoken')
+const TokenModel = require('../models/token-model')
 
 class TokenService {
 
@@ -21,50 +21,46 @@ class TokenService {
 
     async validateAccessToken(token) {
         try {
-            return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+            return jwt.verify(token, process.env.JWT_ACCESS_SECRET)
         } catch (e) {
-            return null;
+            return null
         }
     }
 
     async validateRefrashToken(token) {
         try {
-            return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+            return jwt.verify(token, process.env.JWT_REFRESH_SECRET)
         } catch (e) {
-            return null;
+            return null
         }
     }
 
-    async saveToken(userId, refrashToken) {
+    async saveToken(user_id, refrashToken) {
         // Перед тем как сохранять токен мы попробуем найти по такому userid токен в БД
-        const tokenData = await TokenModel.checkExistsToken(userId);
+        const tokenData = await TokenModel.checkExistsToken(user_id)
 
         // Если нашли токен то перезапишем его
         if (tokenData) {
-            await TokenModel.updateToken(userId, refrashToken)
-            //! console.log('Перезаписываем токен ...')
+            await TokenModel.updateToken(user_id, refrashToken)
         } else {
             // Если не нашли токен то создадим его
-            await TokenModel.createToken(userId, refrashToken)
-            //! console.log('Создаем токен ...')
+            await TokenModel.createToken(user_id, refrashToken)
         }
 
         return {
-            userId,
+            user_id,
             refrashToken
         }
     }
 
     async removeToken(refrashToken) {
-        const tokenData = await TokenModel.deleteToken(refrashToken);
-        return tokenData;
+        return await TokenModel.deleteToken(refrashToken)
     }
 
     async findToken(refrashToken) {
-        const tokenData = await TokenModel.findToken(refrashToken);
-        return tokenData;
+        return await TokenModel.findToken(refrashToken)
     }
 
 }
 
-module.exports = new TokenService();
+module.exports = new TokenService()

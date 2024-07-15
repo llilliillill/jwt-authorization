@@ -1,14 +1,14 @@
 require('dotenv').config()
-const UserService = require('../service/user-service');
-const { validationResult } = require('express-validator');
-const ApiError = require('../exeptions/api-error');
+const UserService = require('../service/user-service')
+const { validationResult } = require('express-validator')
+const ApiError = require('../exeptions/api-error')
 
 class UserController {
 
     async registration(req, res, next) {
         try {
 
-            const errors = validationResult(req);
+            const errors = validationResult(req)
             if(!errors.isEmpty()) {
                 return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
             }
@@ -22,12 +22,17 @@ class UserController {
 
             return res.json(userData)
         } catch(e) {
-            next(e);
+            next(e)
         }
     }
 
     async login(req, res, next) {
         try {
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
+            }
+
             const { email, password } = req.body
             const userData = await UserService.login(email, password)
 
@@ -37,36 +42,35 @@ class UserController {
 
             return res.json(userData)
         } catch(e) {
-            next(e);
+            next(e)
         }
     }
 
     async logout(req, res, next) {
         try {
-            const { refrashToken } = req.cookies;
-            const token = await UserService.logout(refrashToken);
-            res.clearCookie('refrashToken');
-            return res.json(token);
+            const { refrashToken } = req.cookies
+            const token = await UserService.logout(refrashToken)
+            res.clearCookie('refrashToken')
+            return res.json(token)
         } catch(e) {
-            next(e);
+            next(e)
         }
-    }    
+    }
 
     async activate(req, res, next) {
         try {
-            // получаем ссылку из адресной стороки
-            const activationLink = req.params.link;
-            await UserService.activate(activationLink);
-            return res.redirect(process.env.CLIENT_URL);
+            const activationLink = req.params.link
+            await UserService.activate(activationLink)
+            return res.redirect(process.env.CLIENT_URL)
         } catch(e) {
-            next(e);
+            next(e)
         }
     }    
 
     async refresh(req, res, next) {
         try {
-            const { refrashToken } = req.cookies;
-            const userData = await UserService.refresh(refrashToken);
+            const { refrashToken } = req.cookies
+            const userData = await UserService.refresh(refrashToken)
 
             res.cookie('refrashToken', userData.refrashToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
@@ -74,20 +78,20 @@ class UserController {
 
             return res.json(userData)
         } catch(e) {
-            next(e);
+            next(e)
         }
     }    
 
     async getUsers(req, res, next) {
         try {
-            const users = await UserService.getAllUsers();
-            return res.json(users);
+            const users = await UserService.getAllUsers()
+            return res.json(users)
         } catch(e) {
-            next(e);
+            next(e)
         }
     }    
 
 
 }
 
-module.exports = new UserController();
+module.exports = new UserController()

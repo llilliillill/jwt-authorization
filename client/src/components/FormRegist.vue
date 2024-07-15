@@ -87,7 +87,7 @@
 
         methods: {
             onSubmit() {
-                $store.dispatch('registration', { 
+                this.$store.dispatch('registration', { 
                     email: this.formState.email, 
                     username: this.formState.username,
                     password: this.formState.password 

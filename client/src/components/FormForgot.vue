@@ -27,40 +27,40 @@
       </a-button>
     </a-form-item> 
   </a-form>
-  </template>
+</template>
   
-  <script setup>
-    import { UserOutlined } from '@ant-design/icons-vue';
-  </script>
+<script setup>
+  import { UserOutlined } from '@ant-design/icons-vue';
+</script>
     
-  <script>
-    export default {
-  
-      data() {
-        return {
-          formState: {
-            email: ''
-          }
-        }
-      },
-  
-      methods: {
-        onSubmit() {
-          this.formState = {
-            email: '',
-          }
+<script>
+  export default {
+
+    data() {
+      return {
+        formState: {
+          email: ''
         }
       }
+    },
+
+    methods: {
+      onSubmit() {
+        this.formState = {
+          email: '',
+        }
+      }
+    }
+
+  }
+</script>
   
-    }
-  </script>
-    
-  <style scoped>
-    .forgot-form {
-      height: 110px;
-      padding-top: 15px;
-    }
-    .forgot-form-button {
-      width: 100%;
-    }
-  </style>
+<style scoped>
+  .forgot-form {
+    height: 110px;
+    padding-top: 15px;
+  }
+  .forgot-form-button {
+    width: 100%;
+  }
+</style>

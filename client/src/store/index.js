@@ -9,6 +9,10 @@ export default createStore({
     user: {},
     isAuth: false,
     isLoading: false,
+    status: {
+      0: 'Не активирован',
+      1: 'Активирован'
+    },
     users: []
   },
 

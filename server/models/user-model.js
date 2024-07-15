@@ -1,16 +1,16 @@
-const Database = require('better-sqlite3');
+const Database = require('better-sqlite3')
 
 class UserModel {
 
-    db = new Database('./test.db');
+    db = new Database('./test.db')
 
     async checkExistsEmail(email) {
-        // Проверяем есть ли пользователь с таким email
-        return this.db.prepare(`SELECT id, email, username, password FROM users WHERE email = ?`).get(email)
+        return this.db.prepare(`
+            SELECT id, email, username, password FROM users WHERE email = ?
+        `).get(email)
     }
 
     async createUser(user) {
-        // Сохраняем пользователя в БД
         this.db.prepare(
             `INSERT INTO users(
                 email,
@@ -25,38 +25,52 @@ class UserModel {
             user.password,
             0,
             user.activateLink
-        );
+        )
 
-        return user;
+        return user
     }
 
     async checkActivationLink(activationLink) {
-        let userID = ''
+        let user_id = ''
 
-        //! console.log('checkActivationLink: ' + activationLink)
-
-        // Проверяем есть ли пользователь с таким token
-        const user = this.db.prepare(`SELECT id FROM users WHERE activationLink = ?`).get(activationLink);
+        const user = this.db.prepare(`
+            SELECT id FROM users WHERE activationLink = ?
+        `).get(activationLink)
 
         if (user) {
-            userID = user.id
+            user_id = user.id
         }
 
-        return userID 
+        return user_id 
     }
 
-    async changeIsActivated(userID) {
-        this.db.prepare(`UPDATE users SET isActivated = ?, activationLink = ? WHERE id = ?`).run(1, '', userID);
+    async changeIsActivated(user_id) {
+        this.db.prepare(`
+            UPDATE users 
+            SET isActivated = ?, 
+                activationLink = ? 
+            WHERE id = ?
+        `).run(1, '', user_id)
     }
 
-    async findById(userID) {
-        return this.db.prepare(`SELECT * FROM users WHERE id = ?`).get(userID)
+    async getUserById(user_id) {
+        return this.db.prepare(`
+            SELECT * FROM users WHERE id = ?
+        `).get(user_id)
+    }
+
+    async getUserByEmail(email) {
+        return this.db.prepare(`SELECT 
+            id, email, isActivated FROM users WHERE email = ?
+        `).get(email)
     }
 
     async getAllUsers() {
-        return this.db.prepare(`SELECT * FROM users`).all()
+        return this.db.prepare(`
+            SELECT * FROM users
+        `).all()
     }
     
 }
 
-module.exports = new UserModel(); 
+module.exports = new UserModel()
